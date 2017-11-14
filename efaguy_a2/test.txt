@@ -1,0 +1,24 @@
+Mutual Fund
+CIG
+Canada invesment group
+45
+1.0
+45.0
+Stock
+rbc
+royal bank
+45
+1.0
+54.99
+Mutual Fund
+BIB
+Britan invesment bank
+50
+5.0
+250.0
+Stock
+TD
+toronto bank
+50
+3.0
+159.99
