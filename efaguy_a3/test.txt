@@ -1,0 +1,30 @@
+Mutual Fund
+CBI
+Bank
+60
+50.99
+2700.0
+Stock
+RBC
+Royal Bank
+150
+5.0
+779.97
+Mutual Fund
+RI
+Royal Invest
+100
+1.0
+100.0
+Mutual Fund
+test
+test
+10
+10.0
+100.0
+Stock
+Fdhj
+sfbk
+10
+10.0
+109.99
