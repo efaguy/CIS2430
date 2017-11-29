@@ -1,19 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package efaguy_a3;
 
 import java.util.Objects;
 
 /**
- * A parent class to stock and mutualFund
+ * A abstract parent class to stock and mutualFund
  * @author Eric
  */
-public class Investment {
+public abstract class Investment {
     
-    public double FEE;
     private String symbol;
     private String name;
     private int quantity;
@@ -26,17 +20,17 @@ public class Investment {
      * @param name the name of the investment
      * @param quantity how many units are owned
      * @param price the price of the investment per unit
-     * @throws efaguy_a3.BadInput
+     * @throws efaguy_a3.BadInputException An exception thrown when an invalid input is detected 
      */
-    public Investment(String symbol, String name, String quantity, String price) throws BadInput
+    public Investment(String symbol, String name, String quantity, String price) throws BadInputException
     {
         if(symbol.isEmpty())
         {
-            throw new BadInput("symbol");
+            throw new BadInputException("symbol");
         }
         if(name.isEmpty())
         {
-            throw new BadInput("name");
+            throw new BadInputException("name");
         }
         int q;
         try
@@ -45,11 +39,11 @@ public class Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("quantity");
+            throw new BadInputException("quantity");
         }
         if(q <= 0)
         {
-            throw new BadInput("quantity");
+            throw new BadInputException("quantity");
         }
         double p;
         try
@@ -58,16 +52,32 @@ public class Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("price");
+            throw new BadInputException("price");
         }
         if(p <= 0)
         {
-            throw new BadInput("price");
+            throw new BadInputException("price");
         }
         this.symbol = symbol;
         this.name = name;
         this.quantity = q;
         this.price = p;
+    }
+    
+    /**
+     * A copy constructor to copy one investment and make other with the same values 
+     * @param original The investment being copied
+     */
+    public Investment(Investment original)
+    {
+        String newSym = original.symbol;
+        String newName = original.name;
+        int newQuant = original.quantity;
+        double newPrice = original.price;
+        this.symbol = newSym;
+        this.name = newName;
+        this.quantity = newQuant;
+        this.price = newPrice;
     }
     
     /**
@@ -116,10 +126,10 @@ public class Investment {
     /**
      *Removes units and adjust the bookValue
      * @param quantity the new number of units
-     * @return 
-     * @throws efaguy_a3.BadInput
+     * @return The amount of quantity that was removed
+     * @throws efaguy_a3.BadInputException An exception thrown when an invalid input is detected 
      */
-    public int removeQuantity(String quantity) throws BadInput
+    public int removeQuantity(String quantity) throws BadInputException
     {
         int q;
         try
@@ -128,15 +138,15 @@ public class Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("quantity");
+            throw new BadInputException("quantity");
         }
         if(q <= 0)
         {
-            throw new BadInput("quantity");
+            throw new BadInputException("quantityv");
         }
         if(q > this.quantity)
         {
-            throw new BadInput("quantity");
+            throw new BadInputException("quantityt");
         }
         float originalQuantity = (float)this.quantity;
         float newQuantity = originalQuantity - (float)q;
@@ -150,9 +160,9 @@ public class Investment {
     /**
      * Sets a new price for a Investment
      * @param price the new price
-     * @throws efaguy_a3.BadInput
+     * @throws efaguy_a3.BadInputException An exception thrown when an invalid input is detected 
      */
-    public void setPrice(String price) throws BadInput
+    public void setPrice(String price) throws BadInputException
     {
         double p;
         try
@@ -161,11 +171,11 @@ public class Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("price");
+            throw new BadInputException("price");
         }        
         if(p <= 0)
         {
-            throw new BadInput("price");
+            throw new BadInputException("price");
         }
         this.price = p;
     }
@@ -187,6 +197,35 @@ public class Investment {
     {
         this.quantity = quantity;
     }
+    
+    /**
+     * An abstract function to add quantity to an investment
+     * @param curQuantity The current quantity of the investment 
+     * @param newQuantity The quantity being added
+     * @return The new quantity of the investment
+     * @throws BadInputException An exception thrown when an invalid input is detected 
+     */
+    public abstract int addQuantity(int curQuantity, String newQuantity) throws BadInputException;
+    
+    /**
+     * An abstract function to calculate the price of buying an investment
+     * @param quantity The quantity being bought
+     * @return The price of the purchase
+     */
+    public abstract String calculatePrice(int quantity);
+    
+    /**
+     * An abstract function to calculate the profit from selling an investment
+     * @param soldQuantity The quantity being sold
+     * @return The profit of the sale
+     */
+    public abstract String calculateProfit(int soldQuantity);
+    
+    /**
+     * An abstract function to calculate the gain of an investment
+     * @return The gain of the investment
+     */
+    public abstract double getGain();
     
     /**
      * Returns the data of the Investment in formated string
@@ -220,12 +259,5 @@ public class Investment {
             Investment other = (Investment)otherObject;
             return this.symbol.equals(other.symbol);
         }
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 19 * hash + Objects.hashCode(this.symbol);
-        return hash;
     }
 }

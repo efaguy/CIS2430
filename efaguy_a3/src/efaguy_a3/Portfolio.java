@@ -1,14 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package efaguy_a3;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -32,7 +25,7 @@ public class Portfolio {
     /**
      * Loads in investment from a text file
      * @param filename the name of the file to load the investments from
-     * @return 
+     * @return A string detailing the result of the loading
      */
    public String load(String filename)
     {
@@ -82,7 +75,7 @@ public class Portfolio {
                         investments.add(new MutualFund(symbol, name, quantity, price, bookVal));
                     }
                 }
-                catch(BadInput e)
+                catch(BadInputException e)
                 {
                     index.clear();
                     investments.clear();
@@ -110,7 +103,7 @@ public class Portfolio {
     /**
      * Saves all current investments to a text file
      * @param filename the name of the file to save the investments to
-     * @return 
+     * @return A string detailing the results of the saving
      **/
     public String save(String filename)
     {
@@ -157,12 +150,12 @@ public class Portfolio {
     
     /**
      * Buys a investments for the price and quantity defined by the user
-     * @param type
-     * @param symbol
-     * @param name
-     * @param quantity
-     * @param price
-     * @return 
+     * @param type Type of investment being bought
+     * @param symbol Symbol of investment
+     * @param name Name of investment
+     * @param quantity Quantity being bought
+     * @param price Price being bought at
+     * @return A string detailing the results of the buying
      */
     public String buy(String type, String symbol, String name, String quantity, String price)
     {
@@ -208,24 +201,13 @@ public class Portfolio {
             {
                 investments.get(i).setPrice(price);
             
-                if(type.equalsIgnoreCase("stock") || type.equalsIgnoreCase("s"))
-                {
-                    Stock temp = (Stock) investments.get(i);
-                    int addQuantity = temp.addQuantity(investments.get(i).getQuantity(), quantity);
-                    //Output how much they paid and how many shares they own
-                    String paid = String.format("%.2f", (addQuantity * temp.getPrice()) + Stock.FEE);
-                    return "You paid $" + paid + " and own " + investments.get(i).getQuantity() + " shares";
-                }
-                else if(type.equalsIgnoreCase("mutual fund") || type.equalsIgnoreCase("m"))
-                {
-                    MutualFund temp = (MutualFund) investments.get(i);
-                    int addQuantity = temp.addQuantity(investments.get(i).getQuantity(), quantity);
-                    //Output how much they paid and how many shares they own
-                    String paid = String.format("%.2f", (addQuantity * temp.getPrice()));
-                    return "You paid $" + paid + " and own " + investments.get(i).getQuantity() + " units";
-                }
+                int addQuantity = investments.get(i).addQuantity(investments.get(i).getQuantity(), quantity);
+                //Output how much they paid and how many shares they own
+                String paid = investments.get(i).calculatePrice(addQuantity);
+                return "You paid $" + paid + " and own " + investments.get(i).getQuantity() + " units\n" + investments.get(i).toString();
+                
             }
-            catch(BadInput e)
+            catch(BadInputException e)
             {
                 return "Invalid " + e.getMessage() + " input.";
             }
@@ -242,7 +224,7 @@ public class Portfolio {
                     temp = new Stock(symbol, name, quantity, price);
                     investments.add(temp);
                 }
-                catch(BadInput e)
+                catch(BadInputException e)
                 {
                     return "Invalid " + e.getMessage() + " input.";
                 }
@@ -255,7 +237,7 @@ public class Portfolio {
                     temp = new MutualFund(symbol, name, quantity, price);
                     investments.add(temp);
                 }
-                catch(BadInput e)
+                catch(BadInputException e)
                 {
                     return "Invalid " + e.getMessage() + " input.";
                 }
@@ -273,23 +255,17 @@ public class Portfolio {
             }
             String paid;
             Investment temp = investments.get(investments.size() - 1);
-            if(temp instanceof Stock)
-                paid = String.format("%.2f", temp.getQuantity() * temp.getPrice() + Stock.FEE);
-            else
-            {
-                paid = String.format("%.2f", temp.getQuantity() * temp.getPrice());
-            }
-            return "You paid $" + paid + " and own " + quantity + " units";
+            paid = temp.calculatePrice(temp.getQuantity());
+            return "You paid $" + paid + " and own " + quantity + " units\n" + temp.toString();
         }
-        return null;
     }
     
     /**
      * Sells shares of a stock or units of a fund that are already owned  
-     * @param symbol
-     * @param quantity
-     * @param price
-     * @return 
+     * @param symbol Symbol of investment being sold
+     * @param quantity Quantity being sold
+     * @param price Price being sold for
+     * @return A string detailing the results of the selling
      */
     public String sell(String symbol, String quantity, String price)
     {
@@ -305,8 +281,6 @@ public class Portfolio {
         //Find the stock they want to sell
         for(i = 0;i < investments.size(); i++)
         {   
-            //System.out.println(symbol);
-            //System.out.println(investments.get(i).getSymbol());
             if(investments.get(i).getSymbol().equals(symbol))
             {
                 found = true;
@@ -318,37 +292,34 @@ public class Portfolio {
             //If they entered a symbol thay doesn't correspond to a stuck
             return "You do not own a investment with that symbol. Please enter a new symbol";
         }
-        //i--;
-        int newQuantity;
+        int soldQuantity;
         try
         {
             investments.get(i).setPrice(price);
         }
-        catch(BadInput e)
+        catch(BadInputException e)
         {
             return "Invalid " + e.getMessage() + " input.";
         }
         try 
         {
-            newQuantity = investments.get(i).removeQuantity(quantity);
+            soldQuantity = investments.get(i).removeQuantity(quantity);
         } 
-        catch (BadInput ex) 
+        catch (BadInputException ex) 
         {
-            return "Invalid " + ex.getMessage() + " input";
+            switch (ex.getMessage()) {
+                case "quantityv":
+                    return "Quantity must be greater than zero.";
+                case "quantityt":
+                    return "You do not own that many units.";
+                default:
+                    return "Invalid " + ex.getMessage() + " input";
+            }
         }
-        String output = "";
-        if(investments.get(i) instanceof Stock)
-        {
-            //Tell them how much they made and how many shares they have left
-            String profit = String.format("%.2f", ((investments.get(i).getPrice() * newQuantity) - Stock.FEE));
-            output = "You received $" + profit + " and have " + investments.get(i).getQuantity() + " shares left";
-        }
-        else if(investments.get(i) instanceof MutualFund)
-        {
-            //Tell them how much they made and how many units they have left
-            String profit = String.format("%.2f", ((investments.get(i).getPrice() * newQuantity) - MutualFund.FEE));
-            output =  "You received $" + profit + " and have " + investments.get(i).getQuantity() + " units left";
-        }
+        String output;
+        //Tell them how much they made and how many shares they have left
+        String profit = investments.get(i).calculateProfit(soldQuantity);
+        output = "You received $" + profit + " and have " + investments.get(i).getQuantity() + " shares left\n" + investments.get(i).toString();
         if(investments.get(i).getQuantity() == 0)
         {
             investments.remove(i);
@@ -373,10 +344,10 @@ public class Portfolio {
     }
     
     /**
-     * Updatea the price of an investment
-     * @param posn
-     * @param price
-     * @return 
+     * Updates the price of an investment
+     * @param posn Index of the investment being update
+     * @param price The new price of the investment
+     * @return A string detailing the results of the update
      */
     public String update(int posn, String price)
     {
@@ -384,15 +355,15 @@ public class Portfolio {
         {
             investments.get(posn).setPrice(price);
         }
-        catch (BadInput ex) 
+        catch (BadInputException ex) 
         {
             return "Invalid " + ex.getMessage() + " input\n";
         }
-        return "Price changed to $" + price + "\n";
+        return "Price changed to $" + price + "\n" + investments.get(posn).toString();
     }
     /**
      * Calculate the profit that would be many if all the investment were sold at the current prices
-     * @return 
+     * @return A array containing the individual gains of all investments and the total gain
      */
     public String[] getGain()
     {
@@ -403,22 +374,11 @@ public class Portfolio {
         //For all the investments
         for(int i = 0;i < investments.size();i++)
         {
-            System.out.println(investments.get(i).FEE);
             //Caculate the gain for the investments then add it to the total gain
-            if(investments.get(i) instanceof Stock)
-            {
-                curGain = ((investments.get(i).getQuantity()* investments.get(i).getPrice()) - Stock.FEE) - investments.get(i).getBookValue();
-                temp = String.format("%.2f", curGain);
-                gain += "The gain of "  + investments.get(i).getSymbol() + " is $" + temp + "\n";
-                totalGain += curGain;
-            }
-            else if (investments.get(i) instanceof MutualFund)
-            {
-                curGain = ((investments.get(i).getQuantity()* investments.get(i).getPrice()) - MutualFund.FEE) - investments.get(i).getBookValue();
-                temp = String.format("%.2f", curGain);
-                gain += "The gain of "  + investments.get(i).getSymbol() + " is $" + temp + "\n";
-                totalGain += curGain;
-            }
+            curGain = investments.get(i).getGain();
+            temp = String.format("%.2f", curGain);
+            gain += "The gain of "  + investments.get(i).getSymbol() + " is $" + temp + "\n";
+            totalGain += curGain;
         }
         String stotalGain = String.format("$%.2f", totalGain);
         String[] output = {gain, stotalGain};
@@ -428,11 +388,11 @@ public class Portfolio {
 
     /**
      * Searches all the investments for a symbol, and/or price range, and/or keywords in the name inputed by the user
-     * @param symbol
-     * @param keywords
-     * @param lowPrice
-     * @param highPrice
-     * @return 
+     * @param symbol The symbol being searched
+     * @param keywords The keywords being searched
+     * @param lowPrice The low price
+     * @param highPrice The high price
+     * @return A string detailing the results of the search 
      */
     public String search(String symbol, String keywords, String lowPrice, String highPrice) {
         boolean match;
@@ -555,6 +515,10 @@ public class Portfolio {
         return output;
     }
     
+    /**
+     * A function for converting an investment to a string
+     * @return A formating string representation of the investment
+     */
     @Override
     public String toString()
     {
@@ -566,6 +530,10 @@ public class Portfolio {
         return port;
     }
     
+    /**
+     * Returns the symbols of all the investments
+     * @return The symbols of all the investments
+     */
     public ArrayList<String> getSymbols()
     {
         ArrayList<String> symbols = new ArrayList<>();
@@ -577,6 +545,10 @@ public class Portfolio {
         return symbols;
     }
     
+    /**
+     * Returns the names of all the investments
+     * @return The names of all the investments
+     */
     public ArrayList<String> getNames()
     {
         ArrayList<String> names = new ArrayList<>();
@@ -588,6 +560,10 @@ public class Portfolio {
         return names;
     }
     
+    /**
+     * Returns the prices of all the investments
+     * @return The prices of all the investments
+     */
     public ArrayList<Double> getPrices()
     {
         ArrayList<Double> prices = new ArrayList<>();
@@ -599,6 +575,10 @@ public class Portfolio {
         return prices;   
     }
     
+    /**
+     * Returns the quantities of all the investments
+     * @return The quantities of all the investments
+     */
     public ArrayList<Integer> getQuantities()
     {
         ArrayList<Integer> quantities = new ArrayList<>();
@@ -610,6 +590,10 @@ public class Portfolio {
         return quantities;   
     }
     
+     /**
+     * Returns the book values of all the investments
+     * @return The book values of all the investments
+     */
     public ArrayList<Double> getBookVals()
     {
         ArrayList<Double> bookVals = new ArrayList<>();

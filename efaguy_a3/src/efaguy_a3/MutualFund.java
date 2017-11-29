@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package efaguy_a3;
 
 /**
@@ -19,9 +14,9 @@ public class MutualFund extends Investment {
      * @param name the name of the mutualFund
      * @param quantity how many units are owned
      * @param price the price of the mutualFund per units
-     * @throws efaguy_a3.BadInput
+     * @throws efaguy_a3.BadInputException An exception thrown when an invalid input is detected 
      */
-    public MutualFund(String symbol, String name, String quantity, String price) throws BadInput
+    public MutualFund(String symbol, String name, String quantity, String price) throws BadInputException
     {
         super(symbol, name, quantity, price);
         this.setBookValue(this.getQuantity() * this.getPrice());
@@ -35,9 +30,9 @@ public class MutualFund extends Investment {
      * @param quantity how many units are owned
      * @param price the price of the mutualFund per unit
      * @param bookVal the bookValue of the mutualFund
-     * @throws efaguy_a3.BadInput
+     * @throws efaguy_a3.BadInputException An exception thrown when an invalid input is detected 
      */
-    public MutualFund(String symbol, String name, String quantity, String price, String bookVal) throws BadInput
+    public MutualFund(String symbol, String name, String quantity, String price, String bookVal) throws BadInputException
     {
         super(symbol, name, quantity, price);
         double b;
@@ -47,19 +42,13 @@ public class MutualFund extends Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("book val");
+            throw new BadInputException("book val");
         }
         this.setBookValue(b);
     }
     
-    /**
-     * Add quantity to the stock
-     * @param curQuantity
-     * @param newQuantity
-     * @return 
-     * @throws efaguy_a3.BadInput
-     */
-    public int addQuantity(int curQuantity, String newQuantity) throws BadInput
+    @Override
+    public int addQuantity(int curQuantity, String newQuantity) throws BadInputException
     {
         int q;
         try
@@ -68,12 +57,32 @@ public class MutualFund extends Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("quantity");
+            throw new BadInputException("quantity");
         }
         q += curQuantity;
         this.setBookValue(this.getBookValue() + (this.getPrice() * (q - this.getQuantity())));
         this.setQuantity(q);
         return q - curQuantity;
+    }
+    
+    @Override
+    public String calculatePrice(int quantity) {
+        String paid = String.format("%.2f", (quantity * this.getPrice()));
+        return paid;
+    }
+    
+    @Override
+    public String calculateProfit(int soldQuantity)
+    {
+        String profit = String.format("%.2f", ((this.getPrice() * soldQuantity) - MutualFund.FEE));
+        return profit;
+    }
+    
+    @Override
+    public double getGain()
+    {
+        double curGain = ((this.getQuantity() * this.getPrice()) - MutualFund.FEE) - this.getBookValue();
+        return curGain;
     }
     
     @Override
@@ -92,14 +101,5 @@ public class MutualFund extends Investment {
             MutualFund other = (MutualFund)otherObject;
             return this.getSymbol().equals(other.getSymbol());
         }
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        return hash;
-    }
-    
-    
-    
+    }    
 }

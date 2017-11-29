@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package efaguy_a3;
 
 /**
@@ -19,9 +14,9 @@ public class Stock extends Investment {
      * @param name the name of the stock
      * @param quantity how many shares are owned
      * @param price the price of the stock per share
-     * @throws efaguy_a3.BadInput
+     * @throws efaguy_a3.BadInputException An exception thrown when an invalid input is detected 
      */
-    public Stock(String symbol, String name, String quantity, String price) throws BadInput
+    public Stock(String symbol, String name, String quantity, String price) throws BadInputException
     {
         super(symbol, name, quantity, price);
         this.setBookValue(FEE + (this.getQuantity() * this.getPrice()));
@@ -33,10 +28,10 @@ public class Stock extends Investment {
      * @param name the name of the stock
      * @param quantity how many shares are owned
      * @param price the price of the stock per share
-     * @param bookVal the bookValue of th
-     * @throws efaguy_a3.BadInput stock
+     * @param bookVal the bookValue of the stock
+     * @throws efaguy_a3.BadInputException An exception thrown when an invalid input is detected 
      */
-    public Stock(String symbol, String name, String quantity, String price, String bookVal) throws BadInput
+    public Stock(String symbol, String name, String quantity, String price, String bookVal) throws BadInputException
     {
         super(symbol, name, quantity, price);
         double b;
@@ -46,19 +41,18 @@ public class Stock extends Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("book val");
+            throw new BadInputException("book val");
         }
         this.setBookValue(b);
     }
     
-    /**
-     * Add quantity to the stock
-     * @param curQuantity
-     * @param newQuantity
-     * @return 
-     * @throws efaguy_a3.BadInput
-     */
-    public int addQuantity(int curQuantity, String newQuantity) throws BadInput
+    public Stock(Investment original)
+    {
+        super(original);
+    }
+    
+    @Override
+    public int addQuantity(int curQuantity, String newQuantity) throws BadInputException
     {
         int q;
         try
@@ -67,12 +61,32 @@ public class Stock extends Investment {
         }
         catch(NumberFormatException ex)
         {
-            throw new BadInput("quantity");
+            throw new BadInputException("quantity");
         }
         q += curQuantity;
         this.setBookValue(this.getBookValue() + (this.getPrice() * (q - this.getQuantity()) + FEE));
         this.setQuantity(q);
         return q - curQuantity;
+    }
+    
+    @Override
+    public String calculatePrice(int quantity) {
+        String paid = String.format("%.2f", (quantity * this.getPrice() + Stock.FEE));
+        return paid;
+    }
+    
+    @Override
+    public String calculateProfit(int soldQuantity)
+    {
+        String profit = String.format("%.2f", ((this.getPrice() * soldQuantity) - Stock.FEE));
+        return profit;
+    }
+    
+    @Override
+    public double getGain()
+    {
+        double curGain = ((this.getQuantity() * this.getPrice()) - Stock.FEE) - this.getBookValue();
+        return curGain;
     }
     
     @Override
@@ -91,14 +105,5 @@ public class Stock extends Investment {
             Stock other = (Stock)otherObject;
             return this.getSymbol().equals(other.getSymbol());
         }
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        return hash;
-    }
-    
-    
-    
+    }    
 }

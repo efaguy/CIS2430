@@ -1,18 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package efaguy_a3;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.util.*;
 import javax.swing.*;
 
 /**
- *
- * @author Jesse
+ * A class to represent a simple GUI used for buying, selling, updating and searching investments
+ * @author Eric
  */
 public class GUI extends JFrame{
     
@@ -21,8 +16,6 @@ public class GUI extends JFrame{
     ArrayList<String> symbols;
     ArrayList<String> names;
     ArrayList<Double> prices;
-    ArrayList<Integer> quantities;
-    ArrayList<Double> bookVals;
     
     private JPanel make1x2Panel(JLabel left, JComponent right)
     {
@@ -35,7 +28,7 @@ public class GUI extends JFrame{
         return temp;
     }
     
-    private JPanel make1x2Panel(JComponent left, JComponent right)
+    private JPanel make1x2Panel(JComponent left, JComponent right)  
     {
         JPanel temp = new JPanel();
         temp.setLayout(new GridLayout(1,2));
@@ -45,9 +38,12 @@ public class GUI extends JFrame{
         return temp;
     }
 
-    
+    /**
+     * A constructor for a GUI to buy, sell, update, get the gain and search an investment portfolio 
+     * @param filename The filename to load the save the investments to
+     */
     public GUI(String filename){
-        super("Stock Market");
+        super("Investment Portfolio");
         this.posn = 0;
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -71,10 +67,29 @@ public class GUI extends JFrame{
         mainPanel.setLayout(new GridLayout(1,1));
         updatePanel.setLayout(new GridLayout(2,1));
         
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                if(filename.equals(""))
+                {
+                    String newFilename = (String)JOptionPane.showInputDialog(mainPanel,"What filename would you like to save to?", "Save", JOptionPane.PLAIN_MESSAGE, null, null, null);
+                    String save = investments.save(newFilename);
+                }
+                else
+                {
+                    String save = investments.save(filename);
+                }
+            }
+        });
+        
        
         JTextArea area = new JTextArea(1, 1);
-        area.setText(load);
-        area.append(investments.toString());
+        area.setFont(new Font("Serif", Font.PLAIN, 18));
+        area.setText("\n\n\nWelcome to Investment Portfolio\n\n\n\n");
+        area.append("Choose a command from the \"Commands\" menu to buy or sell an investmnet, update prices for all \ninvestments, get gain for the portfolio, search for relevant investments, or quit the program.");
         JScrollPane ascroll = new JScrollPane(area);
         
         
@@ -105,9 +120,16 @@ public class GUI extends JFrame{
         
 
         quit.addActionListener((ActionEvent ae) -> {
-            String save = investments.save(filename);
-            this.setVisible(false);
-            this.dispose();
+            if(filename.equals(""))
+            {
+                String newFilename = (String)JOptionPane.showInputDialog(mainPanel,"What filename would you like to save to?", "Save", JOptionPane.PLAIN_MESSAGE, null, null, null);
+                String save = investments.save(newFilename);
+            }
+            else
+            {
+                String save = investments.save(filename);
+            }
+            System.exit(0);
         });
         
         
@@ -161,12 +183,9 @@ public class GUI extends JFrame{
         buy.addActionListener((ActionEvent ae) -> {
             String buy1 = investments.buy((String)investSelect.getSelectedItem(), symbolBox.getText(), nameBox.getText(), quantityBox.getText(), priceBox.getText());
             mess.setText(buy1 + "\n");
-            mess.append(investments.toString());
         });
         
         reset.addActionListener((ActionEvent ae) -> {
-           mess.setText("");
-           investSelect.setSelectedIndex(0);
            symbolBox.setText("");
            nameBox.setText("");
            quantityBox.setText("");
@@ -228,10 +247,8 @@ public class GUI extends JFrame{
         sell.addActionListener((ActionEvent ae) -> {
             String sell1 = investments.sell(symbolBox2.getText(), quantityBox2.getText(), priceBox2.getText());
             mess2.setText(sell1 + "\n");
-            mess2.append(investments.toString());
         });
         reset2.addActionListener((ActionEvent ae) -> {
-           mess2.setText("");
            symbolBox2.setText("");
            quantityBox2.setText("");
            priceBox2.setText("");
@@ -320,7 +337,6 @@ public class GUI extends JFrame{
         save.addActionListener((ActionEvent ar) -> {
             String update1 = investments.update(posn, priceBox3.getText());
             mess3.setText(update1);
-            mess3.append(investments.toString());
             prices = investments.getPrices();
         });
         
@@ -335,6 +351,7 @@ public class GUI extends JFrame{
            symbols = investments.getSymbols();
            names = investments.getNames();
            prices = investments.getPrices();
+           posn = 0;
            if(symbols.size() > 0)
            {
                 symbolBox3.setText(symbols.get(0));
@@ -372,7 +389,7 @@ public class GUI extends JFrame{
         
         JPanel gainBot = new JPanel();
         gainBot.setLayout(new BorderLayout());
-        JLabel messages4 = new JLabel("Messages");
+        JLabel messages4 = new JLabel("Individual gains");
         messages4.setHorizontalAlignment(JLabel.CENTER);
         gainBot.add(messages4, BorderLayout.NORTH);
         JTextArea mess4 = new JTextArea();
@@ -394,7 +411,15 @@ public class GUI extends JFrame{
            String[] output = investments.getGain();
            
            gainBox.setText(output[1]);
-           mess4.setText(output[0]);
+           if(output[0].isEmpty())
+           {
+               mess4.setText("You don't have any investments.");
+           }
+           else
+           {
+               mess4.setText(output[0]);
+           }
+           
            
         });
         
@@ -429,7 +454,7 @@ public class GUI extends JFrame{
         JPanel searchBot = new JPanel();
         searchBot.setLayout(new BorderLayout());
         
-        JLabel messages5 = new JLabel("Messages");
+        JLabel messages5 = new JLabel("Searching investments");
         messages5.setHorizontalAlignment(JLabel.CENTER);
         searchBot.add(messages5, BorderLayout.NORTH);
         JTextArea mess5 = new JTextArea();
@@ -446,7 +471,6 @@ public class GUI extends JFrame{
             nameBox5.setText("");
             lowPriceBox.setText("");
             highPriceBox.setText("");
-            mess5.setText("");
         });
         search.addActionListener((ActionEvent ae) -> {
             String search1 = investments.search(symbolBox5.getText(), nameBox5.getText(), lowPriceBox.getText(), highPriceBox.getText());
@@ -484,7 +508,6 @@ public class GUI extends JFrame{
         gainPanel.setVisible(false);
         searchPanel.setVisible(false);
         mainPanel.setVisible(true);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
        
         
         
