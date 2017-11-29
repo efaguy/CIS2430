@@ -7,9 +7,9 @@ Royal Bank
 Stock
 TD
 Bank
-10
-55.0
-109.99
+5
+20.0
+54.995
 Mutual Fund
 I
 Bank

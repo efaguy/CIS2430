@@ -46,7 +46,7 @@ public class GUI extends JFrame{
         super("Investment Portfolio");
         this.posn = 0;
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
         }
         this.investments = new Portfolio();
@@ -71,11 +71,12 @@ public class GUI extends JFrame{
         addWindowListener(new WindowAdapter()
         {
             @Override
-            public void windowClosing(WindowEvent e)
+            public void windowClosing(WindowEvent we)
             {
                 if(filename.equals(""))
                 {
-                    String newFilename = (String)JOptionPane.showInputDialog(mainPanel,"What filename would you like to save to?", "Save", JOptionPane.PLAIN_MESSAGE, null, null, null);
+                    String newFilename;
+                    newFilename = (String)JOptionPane.showInputDialog(mainPanel,"What filename would you like to save to?", "Save", JOptionPane.PLAIN_MESSAGE, null, null, null);
                     String save = investments.save(newFilename);
                 }
                 else
